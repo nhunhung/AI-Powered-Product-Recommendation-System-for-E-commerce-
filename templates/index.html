@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Suggestion System</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-control {
+            border-radius: 0.25rem;
+        }
+        .btn-primary {
+            border-radius: 0.25rem;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .card-img-top {
+            max-height: 200px;
+            object-fit: cover;
+        }
+        .alert {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="display-4">Product Suggestion System</h1>
+            <p class="lead">Enter the name of a product to get similar product suggestions.</p>
+        </div>
+        <form id="product-form" class="form-inline justify-content-center">
+            <div class="form-group mb-2">
+                <label for="product_name" class="sr-only">Enter Product Name:</label>
+                <input type="text" id="product_name" name="product_name" class="form-control" placeholder="Enter product name" required>
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">Get Suggestions</button>
+        </form>
+        <div id="alert-container"></div>
+        <div id="suggestions" class="row"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#product-form').on('submit', function(event) {
+                event.preventDefault();
+
+                var productName = $('#product_name').val().trim();
+
+                if (productName === "") {
+                    $('#alert-container').html('<div class="alert alert-danger" role="alert">Please enter a valid product name.</div>');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/predict',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('#suggestions').empty();
+                        $('#alert-container').empty();
+
+                        if (response.length === 0) {
+                            $('#suggestions').append('<div class="alert alert-info" role="alert">No suggestions found.</div>');
+                        } else {
+                            response.forEach(function(product) {
+                                $('#suggestions').append(
+                                    `<div class="col-md-4">
+                                        <div class="card">
+                                            <img src="${product.ImageURL}" class="card-img-top" alt="${product.Name}">
+                                            <div class="card-body">
+                                                <h5 class="card-title">${product.Name}</h5>
+                                                <p class="card-text"><strong>Category:</strong> ${product.Category}</p>
+                                                <p class="card-text"><strong>Brand:</strong> ${product.Brand}</p>
+                                            </div>
+                                        </div>
+                                    </div>`
+                                );
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
